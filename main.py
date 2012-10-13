@@ -2,19 +2,24 @@ import cwiid
 import time
 import sys, pygame
 import math
+import json
+import subprocess
 pygame.init()
 
-print 'Press 1+2 on your Wiimote now...'
-wm = cwiid.Wiimote()
+dbstring = open('db.json').read()
+games = json.loads(dbstring)
 
-time.sleep(1)
-
-wm.rpt_mode = cwiid.RPT_BTN | cwiid.RPT_IR
-
-wm.led = 1
-wm.rumble = 1
-time.sleep(0.5)
-wm.rumble = 0
+#print 'Press 1+2 on your Wiimote now...'
+#wm = cwiid.Wiimote()
+#
+#time.sleep(1)
+#
+#wm.rpt_mode = cwiid.RPT_BTN | cwiid.RPT_IR
+#
+#wm.led = 1
+#wm.rumble = 1
+#time.sleep(0.5)
+#wm.rumble = 0
 
 size = width, height = 640, 480
 speed = [2, 2]
@@ -24,8 +29,8 @@ screen = pygame.display.set_mode(size)
 
 pygame.mouse.set_visible(False)
 
-hand = pygame.image.load("hand.png")
-gui = pygame.image.load("gui.png")
+hand = pygame.image.load("gui/hand.png")
+gui = pygame.image.load("gui/background.png")
 
 lastir0 = (0,0)
 lastir1 = (0,0)
@@ -52,28 +57,47 @@ while 1:
 		if event.type == pygame.QUIT:
 			terminate()
 		elif event.type == pygame.KEYDOWN:
-			if event.key == pygame.K_ESCAPE:
+			if event.key == pygame.K_SPACE:
+				pygame.quit()
+				subprocess.call(["vim"])
+				sys.exit()
+			elif event.key == pygame.K_ESCAPE:
 				terminate()
 
 	screen.fill(black)
+
+	for y in range(0,3):
+		for x in range(0,4):
+			if games[y][x].has_key('thumb'):
+				thumb = pygame.image.load("thumbs/"+games[y][x]['thumb'])
+				screen.blit(thumb, (x*144+32, y*128+32))
+
 	screen.blit(gui, (0, 0))
 
-	ir = wm.state['ir_src'][0]
-	if ir:
-		#pygame.draw.circle(screen, (0,255,0), (ir['pos'][0], ir['pos'][1]), ir['size']*3, 0)
-		lastir0 = (ir['pos'][0], ir['pos'][1])
+	for x in range(0,4):
+		for y in range(0,3):
+			if games[y][x].has_key('thumb'):
+				chan = pygame.image.load("gui/default.png")
+			else:
+				chan = pygame.image.load("gui/blank.png")
+			screen.blit(chan, (x*144+32, y*128+32))
 
-	ir = wm.state['ir_src'][1]
-	if ir:
-		#pygame.draw.circle(screen, (0,255,0), (ir['pos'][0], ir['pos'][1]), ir['size']*3, 0)
-		lastir1 = (ir['pos'][0], ir['pos'][1])
-
-	a = math.atan2(lastir1[0]-lastir0[0], lastir1[1]-lastir0[1])
-
-	cursor = (1000-(lastir0[0]+lastir1[0])/2, (lastir0[1]+lastir1[1])/2)
-
-	rothand = rot_center(hand, math.degrees(a-math.pi/2))
-	screen.blit(rothand, (cursor[0] - 48, cursor[1] - 48))
+	#ir = wm.state['ir_src'][0]
+	#if ir:
+	#	#pygame.draw.circle(screen, (0,255,0), (ir['pos'][0], ir['pos'][1]), ir['size']*3, 0)
+	#	lastir0 = (ir['pos'][0], ir['pos'][1])
+	#
+	#ir = wm.state['ir_src'][1]
+	#if ir:
+	#	#pygame.draw.circle(screen, (0,255,0), (ir['pos'][0], ir['pos'][1]), ir['size']*3, 0)
+	#	lastir1 = (ir['pos'][0], ir['pos'][1])
+	#
+	#a = math.atan2(lastir1[0]-lastir0[0], lastir1[1]-lastir0[1])
+	#
+	#cursor = (1000-(lastir0[0]+lastir1[0])/2, (lastir0[1]+lastir1[1])/2)
+	#
+	#rothand = rot_center(hand, math.degrees(a-math.pi/2))
+	#screen.blit(rothand, (cursor[0] - 48, cursor[1] - 48))
 
 	#pygame.draw.circle(screen, (255,0,0), cursor, 5, 0)
 
