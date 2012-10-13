@@ -12,8 +12,11 @@ time.sleep(1)
 wm.rpt_mode = cwiid.RPT_BTN | cwiid.RPT_IR
 
 wm.led = 1
+wm.rumble = 1
+time.sleep(0.5)
+wm.rumble = 0
 
-size = width, height = 1000, 800
+size = width, height = 640, 480
 speed = [2, 2]
 black = 0, 0, 0
 
@@ -22,6 +25,7 @@ screen = pygame.display.set_mode(size)
 pygame.mouse.set_visible(False)
 
 hand = pygame.image.load("hand.png")
+gui = pygame.image.load("gui.png")
 
 lastir0 = (0,0)
 lastir1 = (0,0)
@@ -29,21 +33,30 @@ lastir1 = (0,0)
 a = math.pi
 
 def rot_center(image, angle):
-    """rotate an image while keeping its center and size"""
-    orig_rect = image.get_rect()
-    rot_image = pygame.transform.rotate(image, angle)
-    rot_rect = orig_rect.copy()
-    rot_rect.center = rot_image.get_rect().center
-    rot_image = rot_image.subsurface(rot_rect).copy()
-    return rot_image
+	"""rotate an image while keeping its center and size"""
+	orig_rect = image.get_rect()
+	rot_image = pygame.transform.rotate(image, angle)
+	rot_rect = orig_rect.copy()
+	rot_rect.center = rot_image.get_rect().center
+	rot_image = rot_image.subsurface(rot_rect).copy()
+	return rot_image
+
+def terminate():
+	pygame.quit()
+	sys.exit()
 
 while 1:
 	#print wm.state
 
 	for event in pygame.event.get():
-		if event.type == pygame.QUIT: sys.exit()
+		if event.type == pygame.QUIT:
+			terminate()
+		elif event.type == pygame.KEYDOWN:
+			if event.key == pygame.K_ESCAPE:
+				terminate()
 
 	screen.fill(black)
+	screen.blit(gui, (0, 0))
 
 	ir = wm.state['ir_src'][0]
 	if ir:
