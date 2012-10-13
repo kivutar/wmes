@@ -6,6 +6,10 @@ import json
 import subprocess
 pygame.init()
 
+pygame.event.set_allowed([pygame.QUIT, pygame.KEYDOWN])
+
+clock = pygame.time.Clock()
+
 RETROPIE = '/home/pi/RetroPie/'
 
 dbstring = open('db.json').read()
@@ -56,22 +60,78 @@ def terminate():
 	pygame.quit()
 	sys.exit()
 
+def launch():
+	if games[gy][gx].has_key('rom'):
+		pygame.quit()
+		subprocess.call([RETROPIE+"RetroArch-Rpi/retroarch",
+			"-c", RETROPIE+"RetroArch-Rpi/retroarch.cfg",
+			"-L", RETROPIE+"emulatorcores/"+games[gy][gx]['core']+"/libretro.so",
+			RETROPIE+"roms/"+games[gy][gx]['rom']])
+		sys.exit()
+
 while 1:
-	#print wm.state
+	clock.tick(30)
+
+	print wm.state
+	wmbuttons = wm.state['buttons']
+
+	WM_2 = False #1
+	WM_1 = False #2
+	WM_B = False #4
+	WM_A = False #8
+	WM_MINUS = False #16
+	WM_HOME = False #128
+	WM_LEFT = False #256
+	WM_RIGHT = False #512
+	WM_DOWN = False #1024
+	WM_UP = False #2048
+	WM_PLUS = False #4096
+
+	if wmbuttons >= 4096:
+		wmbuttons = wmbuttons - 4096
+		WM_PLUS = True
+	if wmbuttons >= 2048:
+		wmbuttons = wmbuttons - 2048
+		WM_UP = True
+	if wmbuttons >= 1024:
+		wmbuttons = wmbuttons - 1024
+		WM_DOWN = True
+	if wmbuttons >= 512:
+		wmbuttons = wmbuttons - 512
+		WM_RIGHT = True
+	if wmbuttons >= 256:
+		wmbuttons = wmbuttons - 256
+		WM_LEFT = True
+	if wmbuttons >= 128:
+		wmbuttons = wmbuttons - 128
+		WM_HOME = True
+	if wmbuttons >= 16:
+		wmbuttons = wmbuttons - 16
+		WM_MINUS = True
+	if wmbuttons >= 8:
+		wmbuttons = wmbuttons - 8
+		WM_A = True
+	if wmbuttons >= 4:
+		wmbuttons = wmbuttons - 4
+		WM_B = True
+	if wmbuttons >= 2:
+		wmbuttons = wmbuttons - 2
+		WM_1 = True
+	if wmbuttons >= 1:
+		wmbuttons = wmbuttons - 1
+		WM_2 = True
 
 	for event in pygame.event.get():
 		if event.type == pygame.QUIT:
 			terminate()
 		elif event.type == pygame.KEYDOWN:
 			if event.key == pygame.K_SPACE:
-				pygame.quit()
-				subprocess.call([RETROPIE+"RetroArch-Rpi/retroarch",
-					"-c", RETROPIE+"RetroArch-Rpi/retroarch.cfg",
-					"-L", RETROPIE+"emulatorcores/"+games[gy][gx]['core']+"/libretro.so",
-					RETROPIE+"roms/"+games[gy][gx]['rom']])
-				sys.exit()
+				launch()
 			elif event.key == pygame.K_ESCAPE:
 				terminate()
+
+	if WM_A:
+		launch()
 
 	screen.fill(black)
 
@@ -83,10 +143,12 @@ while 1:
 
 	screen.blit(gui, (0, 0))
 
-	for x in range(0,4):
-		for y in range(0,3):
+	for y in range(0,3):
+		for x in range(0,4):
 			if cursor[0] > x*144+32 and cursor[0] < (x+1)*144+32 and cursor[1] > y*128+32 and cursor[1] < (y+1)*128+32:
 				chan = pygame.image.load("gui/hover.png")
+				gx = x
+				gy = y
 			elif games[y][x].has_key('thumb'):
 				chan = pygame.image.load("gui/default.png")
 			else:
@@ -110,6 +172,6 @@ while 1:
 	rothand = rot_center(hand, math.degrees(a-math.pi/2))
 	screen.blit(rothand, (cursor[0] - 48, cursor[1] - 48))
 
-	pygame.draw.circle(screen, (255,0,0), cursor, 5, 0)
+	#pygame.draw.circle(screen, (255,0,0), cursor, 5, 0)
 
 	pygame.display.flip()
