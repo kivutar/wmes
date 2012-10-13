@@ -25,7 +25,7 @@ wm.rumble = 0
 pygame.init()
 pygame.event.set_allowed([pygame.QUIT, pygame.KEYDOWN])
 clock = pygame.time.Clock()
-screen = pygame.display.set_mode(640, 480)
+screen = pygame.display.set_mode((640, 480))
 pygame.mouse.set_visible(False)
 
 # Load images
@@ -178,14 +178,14 @@ while True:
 		lastir1 = (ir['pos'][0], ir['pos'][1])
 	
 	# Compute pointer position
-	cursor = (1000-(lastir0[0]+lastir1[0])/2, (lastir0[1]+lastir1[1])/2)
+	cursor = [1000-(lastir0[0]+lastir1[0])/2 - 200, (lastir0[1]+lastir1[1])/2 - 200]
 	
 	# Compute pointer angle and rotate the pointer
 	a = math.atan2(lastir1[0]-lastir0[0], lastir1[1]-lastir0[1])
 	rothand = rot_center(hand, math.degrees(a-math.pi/2))
 
 	# Display the pointer
-	screen.blit(rothand, (cursor[0] - 48, cursor[1] - 48))
+	screen.blit(rothand, cursor)
 
 	#pygame.draw.circle(screen, (255,0,0), cursor, 5, 0)
 
