@@ -4,39 +4,33 @@ import sys, pygame
 import math
 import json
 import subprocess
-pygame.init()
 
-pygame.event.set_allowed([pygame.QUIT, pygame.KEYDOWN])
+RETROPIE = '/home/pi/RetroPie/' # RetroPie path
 
-clock = pygame.time.Clock()
-
-RETROPIE = '/home/pi/RetroPie/'
-
+# Load game database
 dbstring = open('db.json').read()
 games = json.loads(dbstring)
 
+# Pair the WiiMote
 print 'Press 1+2 on your Wiimote now...'
 wm = cwiid.Wiimote()
-
 time.sleep(1)
-
 wm.rpt_mode = cwiid.RPT_BTN | cwiid.RPT_IR
-
 wm.led = 1
 wm.rumble = 1
 time.sleep(0.5)
 wm.rumble = 0
 
-size = width, height = 640, 480
-speed = [2, 2]
-black = 0, 0, 0
-
-screen = pygame.display.set_mode(size)
-
+# Init PyGame
+pygame.init()
+pygame.event.set_allowed([pygame.QUIT, pygame.KEYDOWN])
+clock = pygame.time.Clock()
+screen = pygame.display.set_mode(640, 480)
 pygame.mouse.set_visible(False)
 
+# Load images
 hand = pygame.image.load("gui/hand.png")
-gui = pygame.image.load("gui/background.png")
+background = pygame.image.load("gui/background.png")
 default = pygame.image.load("gui/default.png")
 blank = pygame.image.load("gui/blank.png")
 hover = pygame.image.load("gui/hover.png")
@@ -45,17 +39,16 @@ for y in range(0,3):
 		if games[y][x].has_key('thumb'):
 			games[y][x]['thumb'] = pygame.image.load("thumbs/"+games[y][x]['thumb'])
 
+# Cursor variables
 lastir0 = (0,0)
 lastir1 = (0,0)
-
 a = math.pi
-
 cursor = (0,0)
 gx = 0
 gy = 0
 
+# Rotate an image while keeping its center and size
 def rot_center(image, angle):
-	"""rotate an image while keeping its center and size"""
 	orig_rect = image.get_rect()
 	rot_image = pygame.transform.rotate(image, angle)
 	rot_rect = orig_rect.copy()
@@ -63,11 +56,13 @@ def rot_center(image, angle):
 	rot_image = rot_image.subsurface(rot_rect).copy()
 	return rot_image
 
+# Close WMES
 def terminate():
 	wm.close()
 	pygame.quit()
 	sys.exit()
 
+# Close WMES and launch a game
 def launch():
 	if games[gy][gx].has_key('rom'):
 		wm.close()
@@ -78,10 +73,13 @@ def launch():
 			RETROPIE+"roms/"+games[gy][gx]['rom']])
 		sys.exit()
 
-while 1:
-	clock.tick(30)
+# Main loop
+while True:
+	clock.tick(30) # set FPS
 
-	print wm.state
+	print wm.state # wiimote debug
+
+	# Compute wiimote buttons
 	wmbuttons = wm.state['buttons']
 
 	WM_2 = False #1
@@ -130,6 +128,7 @@ while 1:
 		wmbuttons = wmbuttons - 1
 		WM_2 = True
 
+	# Process events
 	for event in pygame.event.get():
 		if event.type == pygame.QUIT:
 			terminate()
@@ -142,15 +141,19 @@ while 1:
 	if WM_A:
 		launch()
 
-	screen.fill(black)
+	# Blank the screen
+	screen.fill((0,0,0))
 
+	# Display the thumbs
 	for y in range(0,3):
 		for x in range(0,4):
 			if games[y][x].has_key('thumb'):
 				screen.blit(games[y][x]['thumb'], (x*144+32, y*128+32))
 
-	screen.blit(gui, (0, 0))
+	# Display the background
+	screen.blit(background, (0, 0))
 
+	# Display channels borders
 	for y in range(0,3):
 		for x in range(0,4):
 			if cursor[0] > x*144+32 and cursor[0] < (x+1)*144+32 and cursor[1] > y*128+32 and cursor[1] < (y+1)*128+32:
@@ -163,6 +166,7 @@ while 1:
 				chan = blank
 			screen.blit(chan, (x*144+32, y*128+32))
 
+	# Get InfraRed points positions
 	ir = wm.state['ir_src'][0]
 	if ir:
 		#pygame.draw.circle(screen, (0,255,0), (ir['pos'][0], ir['pos'][1]), ir['size']*3, 0)
@@ -173,13 +177,17 @@ while 1:
 		#pygame.draw.circle(screen, (0,255,0), (ir['pos'][0], ir['pos'][1]), ir['size']*3, 0)
 		lastir1 = (ir['pos'][0], ir['pos'][1])
 	
-	a = math.atan2(lastir1[0]-lastir0[0], lastir1[1]-lastir0[1])
-	
+	# Compute pointer position
 	cursor = (1000-(lastir0[0]+lastir1[0])/2, (lastir0[1]+lastir1[1])/2)
 	
+	# Compute pointer angle and rotate the pointer
+	a = math.atan2(lastir1[0]-lastir0[0], lastir1[1]-lastir0[1])
 	rothand = rot_center(hand, math.degrees(a-math.pi/2))
+
+	# Display the pointer
 	screen.blit(rothand, (cursor[0] - 48, cursor[1] - 48))
 
 	#pygame.draw.circle(screen, (255,0,0), cursor, 5, 0)
 
+	# Update display
 	pygame.display.flip()
