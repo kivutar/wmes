@@ -37,6 +37,13 @@ pygame.mouse.set_visible(False)
 
 hand = pygame.image.load("gui/hand.png")
 gui = pygame.image.load("gui/background.png")
+default = pygame.image.load("gui/default.png")
+blank = pygame.image.load("gui/blank.png")
+hover = pygame.image.load("gui/hover.png")
+for y in range(0,3):
+	for x in range(0,4):
+		if games[y][x].has_key('thumb'):
+			games[y][x]['thumb'] = pygame.image.load("thumbs/"+games[y][x]['thumb'])
 
 lastir0 = (0,0)
 lastir1 = (0,0)
@@ -140,21 +147,20 @@ while 1:
 	for y in range(0,3):
 		for x in range(0,4):
 			if games[y][x].has_key('thumb'):
-				thumb = pygame.image.load("thumbs/"+games[y][x]['thumb'])
-				screen.blit(thumb, (x*144+32, y*128+32))
+				screen.blit(games[y][x]['thumb'], (x*144+32, y*128+32))
 
 	screen.blit(gui, (0, 0))
 
 	for y in range(0,3):
 		for x in range(0,4):
 			if cursor[0] > x*144+32 and cursor[0] < (x+1)*144+32 and cursor[1] > y*128+32 and cursor[1] < (y+1)*128+32:
-				chan = pygame.image.load("gui/hover.png")
+				chan = hover
 				gx = x
 				gy = y
 			elif games[y][x].has_key('thumb'):
-				chan = pygame.image.load("gui/default.png")
+				chan = default
 			else:
-				chan = pygame.image.load("gui/blank.png")
+				chan = blank
 			screen.blit(chan, (x*144+32, y*128+32))
 
 	ir = wm.state['ir_src'][0]
