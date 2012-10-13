@@ -1,7 +1,7 @@
 [
 [
-{"name": "Secret of Mana",  "rom": "foo", "thumb": "0.png"},
-{"name": "Final Fantasy 7", "rom": "foo", "thumb": "1.png"},
+{"name": "Secret of Mana",  "core": "pocketsnes-libretro", "rom": "snes/som.smc", "thumb": "0.png"},
+{"name": "Final Fantasy 7", "core": "pcsx_rearmed",        "rom": "psx/FF7.img",  "thumb": "1.png"},
 {},
 {}
 ],
