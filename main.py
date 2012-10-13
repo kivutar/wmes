@@ -57,11 +57,13 @@ def rot_center(image, angle):
 	return rot_image
 
 def terminate():
+	wm.close()
 	pygame.quit()
 	sys.exit()
 
 def launch():
 	if games[gy][gx].has_key('rom'):
+		wm.close()
 		pygame.quit()
 		subprocess.call([RETROPIE+"RetroArch-Rpi/retroarch",
 			"-c", RETROPIE+"RetroArch-Rpi/retroarch.cfg",
